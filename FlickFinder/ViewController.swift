@@ -167,30 +167,35 @@ class ViewController: UIViewController {
                 return
             }
             
-            // Selecting a random photo
-            let randomPhotoIndex = Int(arc4random_uniform(UInt32(photoArray.count)))
-            let photoDictionary = photoArray[randomPhotoIndex] as [String:Any]
-            let photoTitle = photoDictionary[Constants.FlickrResponseKeys.Title] as? String
-            
-            // GUARD: Does our photo have a key for 'url_m'?
-            guard let imageURLString = photoDictionary[Constants.FlickrResponseKeys.MediumURL] as? String else {
-                displayError("Cannot find key '\(Constants.FlickrResponseKeys.MediumURL)'")
+            // MARK: CONTROL FLOW - Checking if there are any photos
+            if photoArray.count == 0 {
+                displayError("No Photos Found. Search Again")
                 return
-            }
-            
-            // If an image exists at the url, set the image and title
-            let imageUrl = URL(string: imageURLString)
-            if let imageData = try? Data(contentsOf: imageUrl!) {
-                performUIUpdatesOnMain {
-                    self.photoImageView.image = UIImage(data: imageData)
-                    self.photoTitleLabel.text = photoTitle
-                    self.setUIEnabled(true)
-                }
             } else {
-                displayError("Image does not exist at \(String(describing: imageUrl))")
+                
+                // Selecting a random photo
+                let randomPhotoIndex = Int(arc4random_uniform(UInt32(photoArray.count)))
+                let photoDictionary = photoArray[randomPhotoIndex] as [String:Any]
+                let photoTitle = photoDictionary[Constants.FlickrResponseKeys.Title] as? String
+                
+                // GUARD: Does our photo have a key for 'url_m'?
+                guard let imageURLString = photoDictionary[Constants.FlickrResponseKeys.MediumURL] as? String else {
+                    displayError("Cannot find key '\(Constants.FlickrResponseKeys.MediumURL)'")
+                    return
+                }
+                
+                // If an image exists at the url, set the image and title
+                let imageUrl = URL(string: imageURLString)
+                if let imageData = try? Data(contentsOf: imageUrl!) {
+                    performUIUpdatesOnMain {
+                        self.photoImageView.image = UIImage(data: imageData)
+                        self.photoTitleLabel.text = photoTitle
+                        self.setUIEnabled(true)
+                    }
+                } else {
+                    displayError("Image does not exist at \(String(describing: imageUrl))")
+                }
             }
-            
-            
             
         }
         task.resume()
